@@ -51,7 +51,7 @@ public class JsonSample {
 		System.out.println("");
 		System.out.println("並替種別を指定してください。");
 		System.out.print("[0:昇順 1:降順]＞");
-		int sorttype = sc.nextInt();//並替種別を格納
+		int sorttype = sc.nextInt();//並替種別を格納する。
 		if(sorttype == 0 || sorttype == 1) {
 			return sorttype;
 		}
