@@ -41,3 +41,16 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+tasks.jar {
+
+	archiveBaseName.set("JsonSample") 
+    manifest {
+        attributes(
+            "Main-Class" to "_JsonSort.JsonSample"
+        )
+    }
+    // もし外部ライブラリ（JSON用のライブラリ等）を含める場合（Fat JAR設定）
+    val runtimeClasspath by configurations
+    from(runtimeClasspath.map { if (it.isDirectory) it else zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

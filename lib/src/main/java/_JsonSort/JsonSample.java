@@ -3,6 +3,7 @@ package _JsonSort;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonSample {
 
-	private static final Scanner sc = new Scanner(System.in);
+private static final Scanner sc = new Scanner(System.in);
 	
 	
 	
@@ -24,22 +25,34 @@ public class JsonSample {
             return;
         //引数に何もない場合
         }else if(args.length == 0) {
-			System.out.println("並べ替えたい項目はなんですか？");
-			System.out.print("[0:番号 1:クラス 2:年齢 3:点数]＞");
-			int item = sc.nextInt();//itemに並べたい項目の値を格納
-
-			if(item >= 0 && item <= 3) {
-				int sortdata = sortdata(item);//並替種別を取得
-				if(sortdata == 0 || sortdata == 1) {
-					jsonperse(item,sortdata);
-				}else {
-					System.out.println("");
-					System.out.println("入力情報が不正です。");
-				}
-			}else {
-				System.out.println("");
-				System.out.println("入力情報が不正です。");
-			}
+        	boolean isValid = false;
+        	do {//数字以外が入力されたら再入力を求める
+        		System.out.println("並べ替えたい項目はなんですか？");
+        		System.out.print("[0:番号 1:クラス 2:年齢 3:点数]＞");
+        		try {
+            		int sortitem = sc.nextInt();//itemに並べたい項目の値を格納
+					isValid = true;
+        			if(sortitem >= 0 && sortitem <= 3) {
+        				int sorttype = sortdata(sortitem);//並替種別を取得
+        				if(sorttype == 0 || sorttype == 1) {
+        					jsonparse(sortitem,sorttype);
+        				}else {
+        					System.out.println("");
+        					System.out.println("入力情報が不正です。");
+        				}	        	
+        			}else {
+        				System.out.println("");
+        				System.out.println("入力情報が不正です。");
+        			}
+        			
+        		}catch (InputMismatchException  e) {
+        			System.out.println("");
+        			System.out.println("数字を入力してください。");
+        			System.out.println("");
+        			sc.next();
+        		}
+        	} while(!isValid);
+        	
 	    //引数に「-help」以外がある場合そのまま終了	
         }else {
         	return;
@@ -47,18 +60,31 @@ public class JsonSample {
 	}
 	
 	//昇順降順情報を取得
-	public  static int  sortdata(int item) {
+	public  static int  sortdata(int sortitem) {
+		boolean isValid = false;
+		do {
 		System.out.println("");
 		System.out.println("並替種別を指定してください。");
 		System.out.print("[0:昇順 1:降順]＞");
-		int sorttype = sc.nextInt();//並替種別を格納
-		if(sorttype == 0 || sorttype == 1) {
-			return sorttype;
-		}
+
+			try {
+				int sorttype = sc.nextInt();//並替種別を格納
+				if(sorttype == 0 || sorttype == 1) {
+					return sorttype;
+				}else {
+					return sorttype;
+				}
+			}catch  (InputMismatchException  e) {
+    			System.out.println("");
+    			System.out.println("数字を入力してください。");
+    			System.out.println("");
+    			sc.next();
+			}
+		}while(!isValid);
     	return 2;
 	}
 	
-	public static void jsonperse(int item,int type) {
+	public static void jsonparse(int sortitem,int sorttype) {
 		ObjectMapper mapper = new ObjectMapper();
         try {
             
@@ -68,60 +94,68 @@ public class JsonSample {
             
             // 2. readValueにFileオブジェクトを直接渡してパース
             Result response = mapper.readValue(jsonFile, Result.class);
-            System.out.println("");
-            System.out.println("＜結果＞");
-            printAligned("%-7s", "番号");
-            printAligned("%-16s", "名前");
-            printAligned("%-8s", "クラス");
-            printAligned("%5s", "年齢");
-            printAligned("%8s%n", "点数");
-            
-            // 3. リストを取得して出力確認
+
             List<Student> students = response.getDatas();
+            displayJsonSort(students,sortitem,sorttype);
             
-            if(item == 0 && type == 0) {
-        		students.sort(Comparator.comparing(Student::getNo));
-            }else if (item == 0 && type == 1){
-            	students.sort(Comparator.comparing(Student::getNo).reversed());
-            }else if (item == 1 && type == 0){
-            	students.sort(Comparator.comparing(Student::getKurasu));
-            }else if (item == 1 && type == 1){
-            	students.sort(Comparator.comparing(Student::getKurasu).reversed());
-            }else if (item == 2 && type == 0){
-            	students.sort(Comparator.comparing(Student::getAge));
-            }else if (item == 2 && type == 1){
-            	students.sort(Comparator.comparing(Student::getAge).reversed());
-            }else if (item == 3 && type == 0){
-            	students.sort(Comparator.comparing(Student::getVal));
-            }else if (item == 3 && type == 1){
-            	students.sort(Comparator.comparing(Student::getVal).reversed());
-            }
-            for (Student student : students) {
-      
-                	    printAligned("%-7s", student.getNo());
-                	    printAligned("%-16s", student.getName());
-                	    printAligned("%-8s", student.getKurasu());
-                	    printAligned("%5s", student.getAge() + "歳");
-                	    printAligned("%8s%n", student.getVal() + "点");
-            }
-
-            // 4. 元のフォーマット（スペース1つのインデント）に合わせてJSONを出力する設定
-            DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
-            DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter(" ", DefaultIndenter.SYS_LF);
-            printer.indentObjectsWith(indenter);
-            printer.indentArraysWith(indenter);
-            
-
-            // 4. writeValue() を使用してオブジェクトをJSONファイルとして書き出し
-            mapper.writer(printer).writeValue(outputFile, response);
-
-            System.out.println("ファイルの保存が完了しました: " + outputFile.getAbsolutePath());
+            outputJsonFile(mapper,outputFile,response);
             
         } catch (IOException e) {
             System.err.println("ファイルの読み込み、またはパースに失敗しました。");
             e.printStackTrace();
         }
 	}
+	//ソートを行うメソッド
+	public static void sortStudents(List<Student> students, int item, int type) {
+        Comparator<Student> comparator;
+        switch (item) {
+            case 0:  comparator = Comparator.comparing(Student::getNo); break;
+            case 1:  comparator = Comparator.comparing(Student::getKurasu); break;
+            case 2:  comparator = Comparator.comparing(Student::getAge); break;
+            case 3:  comparator = Comparator.comparing(Student::getVal); break;
+            default: comparator = Comparator.comparing(Student::getNo); break;
+        }
+
+        if (type == 1) {
+            comparator = comparator.reversed();
+        }
+        students.sort(comparator);
+	}
+	//ソート結果を表示するメソッド
+	public static void displayJsonSort(List<Student> students,int sortitem,int sorttype) {
+        System.out.println("\n＜結果＞");
+        printAligned("%-7s", "番号");
+        printAligned("%-16s", "名前");
+        printAligned("%-8s", "クラス");
+        printAligned("%5s", "年齢");
+        printAligned("%8s%n", "点数");
+     
+        // 3. リストを取得して出力確認      
+        sortStudents(students,sortitem,sorttype);
+        for (Student student : students) {
+  
+            	    printAligned("%-7s", student.getNo());
+            	    printAligned("%-16s", student.getName());
+            	    printAligned("%-8s", student.getKurasu());
+            	    printAligned("%5s", student.getAge() + "歳");
+            	    printAligned("%8s%n", student.getVal() + "点");
+        }
+	}
+	
+	//Jsonファイルを出力するメソッド
+	public static void outputJsonFile(ObjectMapper mapper,File outputFile,Result response) throws IOException{
+        // 4. 元のフォーマット（スペース1つのインデント）に合わせてJSONを出力する設定
+        DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter(" ", DefaultIndenter.SYS_LF);
+        printer.indentObjectsWith(indenter);
+        printer.indentArraysWith(indenter);
+        
+
+        // 4. writeValue() を使用してオブジェクトをJSONファイルとして書き出し
+        mapper.writer(printer).writeValue(outputFile, response);
+
+	}
+	
 	//結果出力する際にインデントがずれるため揃える
 	public static void printAligned(String format, Object val) {
 	    String str = String.valueOf(val);
@@ -139,6 +173,5 @@ public class JsonSample {
 	    String newFormat = format.replaceAll("[0-9]+", String.valueOf(padding));
 	    System.out.printf(newFormat, val);
 	}
-
 
 }

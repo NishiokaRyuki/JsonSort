@@ -18,3 +18,5 @@ bin/
 ### IntelliJ IDEA settings
 .idea/
 *.iml
+
+lib/result.json
