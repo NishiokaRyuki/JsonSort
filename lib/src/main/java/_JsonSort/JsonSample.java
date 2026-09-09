@@ -35,7 +35,7 @@ private static final Scanner sc = new Scanner(System.in);
         			if(sortitem >= 0 && sortitem <= 3) {
         				int sorttype = sortdata(sortitem);//並替種別を取得
         				if(sorttype == 0 || sorttype == 1) {
-        					jsonparse(sortitem,sortitem);
+        					jsonparse(sortitem,sorttype);
         				}else {
         					System.out.println("");
         					System.out.println("入力情報が不正です。");
@@ -129,7 +129,7 @@ private static final Scanner sc = new Scanner(System.in);
         printAligned("%-8s", "クラス");
         printAligned("%5s", "年齢");
         printAligned("%8s%n", "点数");
-        
+     
         // 3. リストを取得して出力確認      
         sortStudents(students,sortitem,sorttype);
         for (Student student : students) {
@@ -154,7 +154,6 @@ private static final Scanner sc = new Scanner(System.in);
         // 4. writeValue() を使用してオブジェクトをJSONファイルとして書き出し
         mapper.writer(printer).writeValue(outputFile, response);
 
-        System.out.println("ファイルの保存が完了しました: " + outputFile.getAbsolutePath());
 	}
 	
 	//結果出力する際にインデントがずれるため揃える
